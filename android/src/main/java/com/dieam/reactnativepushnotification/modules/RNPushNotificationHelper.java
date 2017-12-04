@@ -267,10 +267,12 @@ public class RNPushNotificationHelper {
                 
                 Log.i("ReactSystemNotification", "BUNDLE ->" + bundle );
                 
-                String useCircle = bundle.getString( "circleLargeIconUrl" );
-                Log.i("ReactSystemNotification", "BUNDLE -> : " + useCircle + " :" + bundle );
+                String useCircleString = bundle.getString( "circleLargeIconUrl" );
+                Boolean useCircleBool = ( useCircleString == null ) ? true : Boolean.parseBoolean( useCircleString );
                 
-                if ( Boolean.parseBoolean( useCircle ) ) {
+                Log.i("ReactSystemNotification", "BUNDLE -> : useCircle -> " + useCircleString + " :" + bundle );
+                
+                if ( useCircleBool == true ) {
                     Log.i("ReactSystemNotification", "using rounded largeImage");
                     notification.setLargeIcon(getCircleBitmap(imageUrl));
                 } else {
