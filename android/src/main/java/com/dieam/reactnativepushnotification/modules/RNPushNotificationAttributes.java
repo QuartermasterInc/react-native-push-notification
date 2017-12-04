@@ -20,6 +20,8 @@ public class RNPushNotificationAttributes {
     private static final String TICKER = "ticker";
     private static final String AUTO_CANCEL = "autoCancel";
     private static final String LARGE_ICON = "largeIcon";
+    private static final String LARGE_ICON_URL = "largeIconUrl";
+    private static final String CIRCLE_LARGE_ICON_URL = "circleLargeIconUrl";
     private static final String SMALL_ICON = "smallIcon";
     private static final String BIG_TEXT = "bigText";
     private static final String SUB_TEXT = "subText";
@@ -36,7 +38,7 @@ public class RNPushNotificationAttributes {
     private static final String REPEAT_TYPE = "repeatType";
     private static final String REPEAT_TIME = "repeatTime";
     private static final String ONGOING = "ongoing";
-
+    
     private final String id;
     private final String message;
     private final double fireDate;
@@ -44,6 +46,8 @@ public class RNPushNotificationAttributes {
     private final String ticker;
     private final boolean autoCancel;
     private final String largeIcon;
+    private final String largeIconUrl;
+    private final boolean circleLargeIconUrl;
     private final String smallIcon;
     private final String bigText;
     private final String subText;
@@ -60,7 +64,7 @@ public class RNPushNotificationAttributes {
     private final String repeatType;
     private final double repeatTime;
     private final boolean ongoing;
-
+    
     public RNPushNotificationAttributes(Bundle bundle) {
         id = bundle.getString(ID);
         message = bundle.getString(MESSAGE);
@@ -69,6 +73,8 @@ public class RNPushNotificationAttributes {
         ticker = bundle.getString(TICKER);
         autoCancel = bundle.getBoolean(AUTO_CANCEL);
         largeIcon = bundle.getString(LARGE_ICON);
+        largeIconUrl = bundle.getString(LARGE_ICON_URL);
+        circleLargeIconUrl = bundle.getBoolean(CIRCLE_LARGE_ICON_URL);
         smallIcon = bundle.getString(SMALL_ICON);
         bigText = bundle.getString(BIG_TEXT);
         subText = bundle.getString(SUB_TEXT);
@@ -86,7 +92,7 @@ public class RNPushNotificationAttributes {
         repeatTime = bundle.getDouble(REPEAT_TIME);
         ongoing = bundle.getBoolean(ONGOING);
     }
-
+    
     private RNPushNotificationAttributes(JSONObject jsonObject) {
         try {
             id = jsonObject.has(ID) ? jsonObject.getString(ID) : null;
@@ -96,6 +102,9 @@ public class RNPushNotificationAttributes {
             ticker = jsonObject.has(TICKER) ? jsonObject.getString(TICKER) : null;
             autoCancel = jsonObject.has(AUTO_CANCEL) ? jsonObject.getBoolean(AUTO_CANCEL) : true;
             largeIcon = jsonObject.has(LARGE_ICON) ? jsonObject.getString(LARGE_ICON) : null;
+            largeIconUrl = jsonObject.has(LARGE_ICON_URL) ? jsonObject.getString(LARGE_ICON_URL) : null;
+            // circleLargeIconUrl = jsonObject.has(CIRCLE_LARGE_ICON_URL) ? jsonObject.get(CIRCLE_LARGE_ICON_URL) : false;
+            circleLargeIconUrl = jsonObject.has(CIRCLE_LARGE_ICON_URL) ? jsonObject.getBoolean(CIRCLE_LARGE_ICON_URL) : true;
             smallIcon = jsonObject.has(SMALL_ICON) ? jsonObject.getString(SMALL_ICON) : null;
             bigText = jsonObject.has(BIG_TEXT) ? jsonObject.getString(BIG_TEXT) : null;
             subText = jsonObject.has(SUB_TEXT) ? jsonObject.getString(SUB_TEXT) : null;
@@ -116,13 +125,13 @@ public class RNPushNotificationAttributes {
             throw new IllegalStateException("Exception while initializing RNPushNotificationAttributes from JSON", e);
         }
     }
-
+    
     @NonNull
     public static RNPushNotificationAttributes fromJson(String notificationAttributesJson) throws JSONException {
         JSONObject jsonObject = new JSONObject(notificationAttributesJson);
         return new RNPushNotificationAttributes(jsonObject);
     }
-
+    
     /**
      * User to find notifications:
      * <p>
@@ -133,14 +142,14 @@ public class RNPushNotificationAttributes {
      */
     public boolean matches(ReadableMap userInfo) {
         Bundle bundle = toBundle();
-
+        
         ReadableMapKeySetIterator iterator = userInfo.keySetIterator();
         while (iterator.hasNextKey()) {
             String key = iterator.nextKey();
-
+            
             if (!bundle.containsKey(key))
                 return false;
-
+            
             switch (userInfo.getType(key)) {
                 case Null: {
                     if (bundle.get(key) != null)
@@ -168,10 +177,10 @@ public class RNPushNotificationAttributes {
                     return false;//there are no arrays in the bundle
             }
         }
-
+        
         return true;
     }
-
+    
     public Bundle toBundle() {
         Bundle bundle = new Bundle();
         bundle.putString(ID, id);
@@ -181,6 +190,8 @@ public class RNPushNotificationAttributes {
         bundle.putString(TICKER, ticker);
         bundle.putBoolean(AUTO_CANCEL, autoCancel);
         bundle.putString(LARGE_ICON, largeIcon);
+        bundle.putString(LARGE_ICON_URL, largeIconUrl);
+        bundle.putBoolean(CIRCLE_LARGE_ICON_URL, circleLargeIconUrl);
         bundle.putString(SMALL_ICON, smallIcon);
         bundle.putString(BIG_TEXT, bigText);
         bundle.putString(SUB_TEXT, subText);
@@ -199,7 +210,7 @@ public class RNPushNotificationAttributes {
         bundle.putBoolean(ONGOING, ongoing);
         return bundle;
     }
-
+    
     public JSONObject toJson() {
         JSONObject jsonObject = new JSONObject();
         try {
@@ -210,6 +221,8 @@ public class RNPushNotificationAttributes {
             jsonObject.put(TICKER, ticker);
             jsonObject.put(AUTO_CANCEL, autoCancel);
             jsonObject.put(LARGE_ICON, largeIcon);
+            jsonObject.put(LARGE_ICON_URL, largeIconUrl);
+            jsonObject.put(CIRCLE_LARGE_ICON_URL, circleLargeIconUrl);
             jsonObject.put(SMALL_ICON, smallIcon);
             jsonObject.put(BIG_TEXT, bigText);
             jsonObject.put(SUB_TEXT, subText);
@@ -228,48 +241,50 @@ public class RNPushNotificationAttributes {
             jsonObject.put(ONGOING, ongoing);
         } catch (JSONException e) {
             Log.e(LOG_TAG, "Exception while converting RNPushNotificationAttributes to " +
-                    "JSON. Returning an empty object", e);
+                  "JSON. Returning an empty object", e);
             return new JSONObject();
         }
         return jsonObject;
     }
-
+    
     @Override
     // For debugging
     public String toString() {
         return "RNPushNotificationAttributes{" +
-                "id='" + id + '\'' +
-                ", message='" + message + '\'' +
-                ", fireDate=" + fireDate +
-                ", title='" + title + '\'' +
-                ", ticker='" + ticker + '\'' +
-                ", autoCancel=" + autoCancel +
-                ", largeIcon='" + largeIcon + '\'' +
-                ", smallIcon='" + smallIcon + '\'' +
-                ", bigText='" + bigText + '\'' +
-                ", subText='" + subText + '\'' +
-                ", number='" + number + '\'' +
-                ", sound='" + sound + '\'' +
-                ", color='" + color + '\'' +
-                ", group='" + group + '\'' +
-                ", userInteraction=" + userInteraction +
-                ", playSound=" + playSound +
-                ", vibrate=" + vibrate +
-                ", vibration=" + vibration +
-                ", actions='" + actions + '\'' +
-                ", tag='" + tag + '\'' +
-                ", repeatType='" + repeatType + '\'' +
-                ", repeatTime=" + repeatTime +
-                ", ongoing=" + ongoing +
-                '}';
+        "id='" + id + '\'' +
+        ", message='" + message + '\'' +
+        ", fireDate=" + fireDate +
+        ", title='" + title + '\'' +
+        ", ticker='" + ticker + '\'' +
+        ", autoCancel=" + autoCancel +
+        ", largeIcon='" + largeIcon + '\'' +
+        ", largeIconUrl='" + largeIconUrl + '\'' +
+        ", circleLargeIconUrl='" + circleLargeIconUrl + '\'' +
+        ", smallIcon='" + smallIcon + '\'' +
+        ", bigText='" + bigText + '\'' +
+        ", subText='" + subText + '\'' +
+        ", number='" + number + '\'' +
+        ", sound='" + sound + '\'' +
+        ", color='" + color + '\'' +
+        ", group='" + group + '\'' +
+        ", userInteraction=" + userInteraction +
+        ", playSound=" + playSound +
+        ", vibrate=" + vibrate +
+        ", vibration=" + vibration +
+        ", actions='" + actions + '\'' +
+        ", tag='" + tag + '\'' +
+        ", repeatType='" + repeatType + '\'' +
+        ", repeatTime=" + repeatTime +
+        ", ongoing=" + ongoing +
+        '}';
     }
-
+    
     public String getId() {
         return id;
     }
-
+    
     public double getFireDate() {
         return fireDate;
     }
-
+    
 }
