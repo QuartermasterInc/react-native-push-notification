@@ -5,6 +5,7 @@ import android.app.AlarmManager;
 import android.app.Application;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.NotificationChannel;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
@@ -189,7 +190,7 @@ public class RNPushNotificationHelper {
                 title = context.getPackageManager().getApplicationLabel(appInfo).toString();
             }
             
-            NotificationCompat.Builder notification = new NotificationCompat.Builder(context)
+            NotificationCompat.Builder notification = new NotificationCompat.Builder(context, "quartermaster")
             .setContentTitle(title)
             .setTicker(bundle.getString("ticker"))
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
@@ -360,7 +361,18 @@ public class RNPushNotificationHelper {
                                                                     PendingIntent.FLAG_UPDATE_CURRENT);
             
             NotificationManager notificationManager = notificationManager();
-            
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                int importance = NotificationManager.IMPORTANCE_HIGH;
+
+                NotificationChannel notificationChannel = new NotificationChannel("quartermaster", "quartermaster", importance);
+                notificationChannel.enableLights(true);
+                notificationChannel.setLightColor(Color.RED);
+                notificationChannel.enableVibration(true);
+                notificationChannel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                notificationManager.createNotificationChannel(notificationChannel);
+            }
+
             notification.setContentIntent(pendingIntent);
             
             if (!bundle.containsKey("vibrate") || bundle.getBoolean("vibrate")) {
@@ -417,7 +429,7 @@ public class RNPushNotificationHelper {
             }
             
             Notification info = notification.build();
-            info.defaults |= Notification.DEFAULT_LIGHTS;
+            info.defaults |= NotificationCompat.DEFAULT_LIGHTS;
             
             if (bundle.containsKey("tag")) {
                 String tag = bundle.getString("tag");
